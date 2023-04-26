@@ -27,7 +27,7 @@
     <param name="yaw_cam"           value="0" />
     <param name="gamma_world"       value="-1.5707963" />
  -->
-    <node pkg="vision_to_mavros" type="vicon_to_mavros_node" name="vicon_to_mavros" output="screen" >
+    <node pkg="vision_to_mavros" type="vicon_to_mavros_my_node" name="vicon_to_mavros" output="screen" >
         <remap from="vicon_pose" to="/mavros/vision_pose/pose" />
     </node>
 </launch>

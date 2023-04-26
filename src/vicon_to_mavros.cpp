@@ -1,6 +1,6 @@
 #include <ros/ros.h>
-// #include <tf/transform_listener.h>
-// #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 // #include <nav_msgs/Path.h>
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
   geometry_msgs::PoseStamped msg_body_pose;
 
-  nav_msgs::Path body_path;
+  // nav_msgs::Path body_path;
 
   std::string target_frame_id = "/camera_odom_frame";
 
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
   while (node.ok())
   {
     // For tf, Time(0) means "the latest available" transform in the buffer.
-    ros::Time now = ros::Time(0);
+    ros::Time now = ros::Time::now();
 
     //////////////////////////////////////////////////
     // Publish vision_position_estimate message if transform is available
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
       {
         // last_tf_time = transform.stamp_;
 
-        static tf::Vector3 position_orig, position_body;
+        static tf::Vector3 position_body;
 
         static tf::Quaternion quat_body;
 
@@ -195,8 +195,8 @@ int main(int argc, char** argv)
         // position_body.setY(-sin(gamma_world) * position_orig.getX() + cos(gamma_world) * position_orig.getY());
         // position_body.setZ(position_orig.getZ());
         position_body.setX(0.1);  // dummy
-        position_body.setX(0.2);  // dummy
-        position_body.setX(0.3);  // dummy
+        position_body.setY(0.2);  // dummy
+        position_body.setZ(0.3);  // dummy
 
         // // 2) Rotation from camera to body frame.
         // quat_cam = transform.getRotation();
@@ -209,13 +209,13 @@ int main(int argc, char** argv)
         // quat_rot_z = tf::createQuaternionFromRPY(0, 0, -gamma_world);
 
         quat_body.setX(0.5); // dummy
-        quat_body.setX(0.1); // dummy
-        quat_body.setX(-0.03); // dummy
-        quat_body.setX(0.9); // dummy
+        quat_body.setY(0.1); // dummy
+        quat_body.setZ(-0.03); // dummy
+        quat_body.setW(0.9); // dummy
         quat_body.normalize();
 
         // Create PoseStamped message to be sent
-        msg_body_pose.header.stamp = 1; //dummy //transform.stamp_;
+        msg_body_pose.header.stamp = now; //dummy //transform.stamp_;
         msg_body_pose.header.frame_id = 1; // dummy //transform.frame_id_;
         msg_body_pose.pose.position.x = position_body.getX();
         msg_body_pose.pose.position.y = position_body.getY();
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
         // body_path.header.frame_id = msg_body_pose.header.frame_id;
         // body_path.poses.push_back(msg_body_pose);
         // body_path_pubisher.publish(body_path);
-      }?
+      }
     }
     catch (tf::TransformException ex)
     {

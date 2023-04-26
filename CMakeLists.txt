@@ -146,6 +146,11 @@ target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(vicon_to_mavros_my_node src/vicon_to_mavros.cpp)
+target_link_libraries(vicon_to_mavros_my_node
+  ${catkin_LIBRARIES}
+)
+
 add_executable(t265_fisheye_undistort_node src/t265_fisheye_undistort.cpp)
 target_link_libraries(t265_fisheye_undistort_node
   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
