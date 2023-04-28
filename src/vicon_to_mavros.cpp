@@ -21,9 +21,6 @@
         vicon_pose_storage.header = msg->header;
         // save the pose
         vicon_pose_storage.pose = msg->pose;
-
-        // possibly obsolete
-        // pose1.push_back(msg);
     }
 
     int main(int argc, char** argv)
@@ -34,10 +31,11 @@
 
         ros::init(argc, argv, "vicon_to_mavros"); // initialize the node named "vicon_to_mavros"
 
+        ros::NodeHandle nh;
 
         // check the name of the tracker
         std::string tracker; 
-        if(node.getParam("tracker_name", tracker))
+        if(nh.getParam("tracker_name", tracker))
         {
           ROS_INFO("Get tracker_name parameter: %s", tracker.c_str());
         }
@@ -46,10 +44,9 @@
           ROS_WARN("Using default tracker_name: %s", tracker.c_str());
         }
 
-        ros::NodeHandle nh;
-
+       
         // todo: pull the tracker name from launch file parameter
-        ros::Subscriber subscribetf = nh.subscribe("/vrpn_client_node/Q2s/pose", 1000, myCallBack); 
+        ros::Subscriber subscribetf = nh.subscribe("/vrpn_client_node/"+tracker+"/pose", 1000, myCallBack); 
 
         // publishing under the topic name "vicon_pose"
         ros::Publisher camera_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("vicon_pose", 10);

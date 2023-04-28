@@ -3,7 +3,8 @@
 
     <param name="output_rate" value="30" />
     <!-- put other parameters here, e.g., tracker name -->
-    <param name="tracker_name" default="Q2s" /> 
+    <arg name="tracker_name" default="Q2s" /> 
+    <param name="tracker_name"   value="$(arg tracker_name)" />
 
     <node pkg="vision_to_mavros" type="vicon_to_mavros_my_node" name="vicon_to_mavros" output="screen" >
         <remap from="vicon_pose" to="/mavros/vision_pose/pose" />
