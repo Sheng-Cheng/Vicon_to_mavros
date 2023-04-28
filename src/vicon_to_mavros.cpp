@@ -23,7 +23,7 @@
         vicon_pose_storage.pose = msg->pose;
 
         // possibly obsolete
-        pose1.push_back(msg);
+        // pose1.push_back(msg);
     }
 
     int main(int argc, char** argv)
@@ -33,6 +33,18 @@
         geometry_msgs::PoseStamped msg_body_pose; // use this variable to publish pose
 
         ros::init(argc, argv, "vicon_to_mavros"); // initialize the node named "vicon_to_mavros"
+
+
+        // check the name of the tracker
+        std::string tracker; 
+        if(node.getParam("tracker_name", tracker))
+        {
+          ROS_INFO("Get tracker_name parameter: %s", tracker.c_str());
+        }
+        else
+        {
+          ROS_WARN("Using default tracker_name: %s", tracker.c_str());
+        }
 
         ros::NodeHandle nh;
 
