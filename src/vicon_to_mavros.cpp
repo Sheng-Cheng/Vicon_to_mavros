@@ -3,11 +3,13 @@
     #include <tf/transform_broadcaster.h>  // possible obsolete
     #include <geometry_msgs/Pose.h>
     #include <geometry_msgs/PoseStamped.h>
+    #include <geographic_msgs/GeoPointStamped.h>
 
     #include <string.h>
 
     // define the following global variable to pass the pose from callback function to main function
     geometry_msgs::PoseStamped vicon_pose_storage;
+    geographic_msgs::GeoPointStamped MELorigin;
 
     std::vector<geometry_msgs::PoseStamped::ConstPtr> pose1;  // possibly obsolete
 
@@ -50,9 +52,16 @@
 
         // publishing under the topic name "vicon_pose"
         ros::Publisher camera_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("vicon_pose", 10);
+
+        // publishing the origin information to mavros
+        ros::Publisher vicon_set_global_origin_pub = nh.advertise<geographic_msgs::GeoPointStamped>("/mavros/global_position/set_gp_origin", 10);
         
         // Limit the rate of publishing data, otherwise the other telemetry port might be flooded
         ros::Rate rate(output_rate);
+
+        // new code to correct mavros/vision_pose/pose's yaw rotation of 90 deg (1.57079632679 rad)
+        static tf::Quaternion  quat_rot_z, quat_vicon, quat_mavros;
+        quat_rot_z = tf::createQuaternionFromRPY(0, 0, 1.57079632679);
 
         while (nh.ok())
          {
@@ -67,10 +76,26 @@
             msg_body_pose.pose.position.x = -vicon_pose_storage.pose.position.y; 
             msg_body_pose.pose.position.y = vicon_pose_storage.pose.position.x; 
             msg_body_pose.pose.position.z = vicon_pose_storage.pose.position.z;
-            msg_body_pose.pose.orientation = vicon_pose_storage.pose.orientation;
+
+            // we add 90 deg rotation to the vicon quaternion to compensate for the mavros rotation
+            quat_vicon = tf::Quaternion(vicon_pose_storage.pose.orientation.x, vicon_pose_storage.pose.orientation.y, vicon_pose_storage.pose.orientation.z, vicon_pose_storage.pose.orientation.w);
+            quat_mavros = quat_rot_z * quat_vicon;
+            quat_mavros = quat_mavros.normalize();
+             
+            msg_body_pose.pose.orientation.x = quat_mavros.getX();
+            msg_body_pose.pose.orientation.y = quat_mavros.getY();
+            msg_body_pose.pose.orientation.z = quat_mavros.getZ();
+            msg_body_pose.pose.orientation.w = quat_mavros.getW();
+
+            // update the GPS origin (todo: set to 1 Hz)
+            MELorigin.header.stamp.nsec = ros::Time::now().toSec();
+            MELorigin.position.latitude = 40.6892;
+            MELorigin.position.longitude = -74.0445;
+            MELorigin.position.altitude = 0.0;
 
             // Publish the pose in ENU
             camera_pose_publisher.publish(msg_body_pose);
+            vicon_set_global_origin_pub.publish(MELorigin);
 
             rate.sleep();
           }
